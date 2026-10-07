@@ -1,0 +1,47 @@
+mode: daemon
+scan_interval_sec: 60
+sqlite_path: etsy.db
+output_dir: output
+worker_concurrency: 5
+http_timeout_sec: 30
+log_level: info
+
+filters:
+  price:
+    enabled: false
+    min: 0
+    max: 0
+
+  seller_registered:
+    enabled: false
+    before: "2024-01-01"
+    after: "2020-01-01"
+
+  listing_age:
+    enabled: true
+    max_minutes: 30
+
+  shop_listing_count:
+    enabled: true
+    min: 5
+
+  shop_sales:
+    enabled: false
+    min: 0
+
+  rating:
+    enabled: false
+    min_average: 0
+    min_reviews: 0
+
+  country:
+    enabled: false
+    allow: []
+    deny: []
+
+telegram:
+  enabled: true
+  api_id: 2040
+  api_hash: "b18441a1ff607e10a989891a5462e627"
+  bot_username: "Kartatai_RO_BOT"
+  session_path: "tg_session.json"
