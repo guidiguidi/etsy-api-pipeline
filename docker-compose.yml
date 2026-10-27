@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  etsy-pipeline:
+    build: .
+    container_name: etsy-pipeline
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+      - ./config.yaml:/app/config.yaml:ro
