@@ -26,13 +26,13 @@ func main() {
 		log.Fatal("ETSY_API_KEY not found in .env")
 	}
 
-	// Берем только Keystring
+	// Use Keystring only
 	clientID := strings.Split(apiKey, ":")[0]
 
 	var code, verifier string
-	fmt.Print("Введите Code из браузера: ")
+	fmt.Print("Enter authorization code from browser: ")
 	fmt.Scanln(&code)
-	fmt.Print("Введите Code Verifier: ")
+	fmt.Print("Enter Code Verifier: ")
 	fmt.Scanln(&verifier)
 
 	redirectURI := "http://localhost:3000"
@@ -46,24 +46,24 @@ func main() {
 
 	resp, err := http.PostForm("https://api.etsy.com/v3/public/oauth/token", data)
 	if err != nil {
-		log.Fatalf("Ошибка запроса: %v", err)
+		log.Fatalf("Request error: %v", err)
 	}
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Ошибка от Etsy (%s): %s", resp.Status, string(body))
+		log.Fatalf("Etsy API error (%s): %s", resp.Status, string(body))
 	}
 
 	var tr TokenResponse
 	if err := json.Unmarshal(body, &tr); err != nil {
-		log.Fatalf("Ошибка парсинга JSON: %v", err)
+		log.Fatalf("JSON decode error: %v", err)
 	}
 
-	fmt.Println("\n--- Успех! ---")
+	fmt.Println("\n--- Success! ---")
 	if err := config.SaveTokens(tr.AccessToken, tr.RefreshToken); err != nil {
-		fmt.Printf("Ошибка сохранения: %v\n", err)
+		fmt.Printf("Save error: %v\n", err)
 	} else {
-		fmt.Println("Токены успешно сохранены в .env")
+		fmt.Println("Tokens successfully persisted to .env")
 	}
 }

@@ -70,7 +70,7 @@ func (s *Sender) Start(ctx context.Context) error {
 	}
 }
 
-// waitForButton ждет появления кнопки
+// waitForButton awaits specific inline keyboard button
 func (s *Sender) waitForButton(ctx context.Context, buttonTextOrData string, timeout time.Duration) (int, []byte, error) {
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
@@ -109,7 +109,7 @@ func (s *Sender) waitForButton(ctx context.Context, buttonTextOrData string, tim
 	return 0, nil, fmt.Errorf("button '%s' not found", buttonTextOrData)
 }
 
-// waitForText ждет появления определенного текста от бота
+// waitForText awaits expected message text in conversation
 func (s *Sender) waitForText(ctx context.Context, expectedText string, timeout time.Duration) error {
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
@@ -168,17 +168,17 @@ func (s *Sender) SendMatch(ctx context.Context, match *model.Match) error {
 	if err := s.click(ctx, "create_link_eu"); err != nil { return err }
 	if err := s.click(ctx, "create_link_service_etsy_eu"); err != nil { return err }
 
-	_ = s.waitForText(ctx, "Введите название", 10*time.Second)
+	_ = s.waitForText(ctx, "Enter title", 10*time.Second)
 	title := strings.ReplaceAll(match.Listing.Title, "`", "")
 	log.Printf("💬 Telegram: Sending Title: %s", title)
 	_, _ = s.sender.To(s.peer).Text(ctx, title)
 
-	_ = s.waitForText(ctx, "Введите цену", 10*time.Second)
+	_ = s.waitForText(ctx, "Enter price", 10*time.Second)
 	price := fmt.Sprintf("%.2f", match.Listing.Price.ToFloat())
 	log.Printf("💬 Telegram: Sending Price: %s", price)
 	_, _ = s.sender.To(s.peer).Text(ctx, price)
 
-	_ = s.waitForText(ctx, "изображение", 10*time.Second)
+	_ = s.waitForText(ctx, "image", 10*time.Second)
 	img := match.Listing.ImageURL
 	if img == "" { img = "https://via.placeholder.com/500" }
 	log.Printf("💬 Telegram: Sending Image URL: %s", img)
@@ -186,7 +186,7 @@ func (s *Sender) SendMatch(ctx context.Context, match *model.Match) error {
 	
 	if err := s.click(ctx, "Daily Mail"); err != nil { return err }
 
-	_ = s.waitForText(ctx, "Введите почту", 10*time.Second)
+	_ = s.waitForText(ctx, "Enter email", 10*time.Second)
 	if match.Shop.EmailValid {
 		log.Printf("💬 Telegram: Sending Email: %s", match.Shop.Email)
 		_, _ = s.sender.To(s.peer).Text(ctx, match.Shop.Email)

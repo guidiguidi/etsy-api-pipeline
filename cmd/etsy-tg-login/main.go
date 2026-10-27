@@ -16,25 +16,25 @@ import (
 	"github.com/gotd/td/tg"
 )
 
-// terminalAuth реализует интерфейс auth.UserAuthenticator
+// terminalAuth implements auth.UserAuthenticator interface
 type terminalAuth struct {
 	scan *bufio.Scanner
 }
 
 func (a terminalAuth) Phone(ctx context.Context) (string, error) {
-	fmt.Print("Введите ваш номер телефона (например, +79991234567): ")
+	fmt.Print("Enter your phone number (e.g., +1234567890): ")
 	a.scan.Scan()
 	return strings.TrimSpace(a.scan.Text()), nil
 }
 
 func (a terminalAuth) Password(ctx context.Context) (string, error) {
-	fmt.Print("Введите пароль (2FA), если он есть: ")
+	fmt.Print("Enter 2FA password (leave empty if none): ")
 	a.scan.Scan()
 	return strings.TrimSpace(a.scan.Text()), nil
 }
 
 func (a terminalAuth) Code(ctx context.Context, sentCode *tg.AuthSentCode) (string, error) {
-	fmt.Print("Введите код из Telegram: ")
+	fmt.Print("Enter confirmation code from Telegram: ")
 	a.scan.Scan()
 	return strings.TrimSpace(a.scan.Text()), nil
 }
@@ -44,7 +44,7 @@ func (a terminalAuth) AcceptTermsOfService(ctx context.Context, tos tg.HelpTerms
 }
 
 func (a terminalAuth) SignUp(ctx context.Context) (auth.UserInfo, error) {
-	return auth.UserInfo{}, fmt.Errorf("регистрация новых пользователей не поддерживается")
+	return auth.UserInfo{}, fmt.Errorf("registration of new users is not supported")
 }
 
 func main() {
@@ -73,9 +73,9 @@ func main() {
 			return err
 		}
 
-		fmt.Println("✅ Авторизация успешна! Сессия сохранена в:", cfg.Telegram.SessionPath)
+		fmt.Println("Authentication successful! Session saved to:", cfg.Telegram.SessionPath)
 		return nil
 	}); err != nil {
-		log.Fatalf("Ошибка: %v", err)
+		log.Fatalf("Login error: %v", err)
 	}
 }

@@ -32,6 +32,6 @@ func BuildAuthURL(clientID, redirectURI, state, challenge string, scopes []strin
 	q.Set("code_challenge", challenge)
 	q.Set("code_challenge_method", "S256")
 	u.RawQuery = q.Encode()
-	// Etsy ожидает плюсы в scopes, а Encode() делает %2B. Поправим:
+	// Etsy expects plus-delimited scopes while standard Encode() produces %2B:
 	return strings.ReplaceAll(u.String(), "%2B", "+")
 }

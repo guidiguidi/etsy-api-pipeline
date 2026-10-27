@@ -20,8 +20,8 @@ import (
 const baseURL = "https://api.etsy.com/v3"
 
 type Client struct {
-	apiKey       string // Формат "keystring:shared_secret"
-	accessToken  string // Формат "access_token"
+	apiKey       string // Format: "keystring:shared_secret"
+	accessToken  string // Format: "access_token"
 	refreshToken string
 	httpClient   *http.Client
 	limiter      *rate.Limiter
@@ -39,7 +39,7 @@ func NewClient(apiKey, accessToken, refreshToken string, timeout time.Duration) 
 	}
 }
 
-// ExchangeCodeForToken обменивает временный code на access и refresh токены
+// ExchangeCodeForToken exchanges temporary code for access and refresh tokens
 func (c *Client) ExchangeCodeForToken(code, verifier, redirectURI string) (string, string, error) {
 	clientID := strings.Split(c.apiKey, ":")[0]
 
@@ -70,14 +70,14 @@ func (c *Client) ExchangeCodeForToken(code, verifier, redirectURI string) (strin
 		return "", "", err
 	}
 
-	// Обновляем состояние клиента чистым токеном
+	// Update client state with fresh access token
 	c.accessToken = res.AccessToken
 	c.refreshToken = res.RefreshToken
 
 	return res.AccessToken, res.RefreshToken, nil
 }
 
-// RefreshAccessToken обновляет протухший токен
+// RefreshAccessToken refreshes an expired access token
 func (c *Client) RefreshAccessToken() error {
 	clientID := strings.Split(c.apiKey, ":")[0]
 
@@ -114,7 +114,7 @@ func (c *Client) RefreshAccessToken() error {
 	return config.SaveTokens(c.accessToken, c.refreshToken)
 }
 
-// doRequest вешает нужные заголовки и делает рефреш при 401
+// doRequest injects required headers and handles automatic token refresh on 401
 func (c *Client) doRequest(req *http.Request) (*http.Response, error) {
 	if err := c.limiter.Wait(context.Background()); err != nil {
 		return nil, err
@@ -130,13 +130,13 @@ func (c *Client) doRequest(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	// Дебаг логирование
-	if strings.Contains(c.apiKey, "secret") { // Простая проверка на наличие конфига
-		// Мы не можем легко получить доступ к Config отсюда без изменения структуры,
-		// но мы можем выводить статус ответа для наглядности
+	// Debug logging
+	if strings.Contains(c.apiKey, "secret") { // Basic validation of config presence
+		// Logging response status for observability
+		// without modifying the underlying client structure
 		if resp.StatusCode >= 400 {
 			body, _ := io.ReadAll(resp.Body)
-			resp.Body = io.NopCloser(bytes.NewBuffer(body)) // Возвращаем тело назад
+			resp.Body = io.NopCloser(bytes.NewBuffer(body)) // Restore response stream
 			fmt.Printf("🔍 [DEBUG] API Error %d: %s\n", resp.StatusCode, string(body))
 		}
 	}
@@ -147,7 +147,7 @@ func (c *Client) doRequest(req *http.Request) (*http.Response, error) {
 		if err := c.RefreshAccessToken(); err != nil {
 			return nil, err
 		}
-		// Повтор с новым токеном
+		// Retry request with renewed token
 		req.Header.Set("Authorization", "Bearer "+c.accessToken)
 		return c.httpClient.Do(req)
 	}
@@ -156,7 +156,7 @@ func (c *Client) doRequest(req *http.Request) (*http.Response, error) {
 }
 
 func (c *Client) GetActiveListings(limit, offset int) ([]model.Listing, error) {
-	// Добавляем sort_on=created, sort_order=desc и includes=Images
+	// Request newest listings sorted descending with image assets
 	endpoint := fmt.Sprintf("%s/application/listings/active?limit=%d&offset=%d&sort_on=created&sort_order=desc&includes=Images", baseURL, limit, offset)
 	req, _ := http.NewRequest("GET", endpoint, nil)
 
@@ -178,7 +178,7 @@ func (c *Client) GetActiveListings(limit, offset int) ([]model.Listing, error) {
 		return nil, err
 	}
 
-	// Извлекаем URL первой картинки
+	// Extract primary thumbnail image URL
 	for i := range lResp.Results {
 		if len(lResp.Results[i].Images) > 0 {
 			lResp.Results[i].ImageURL = lResp.Results[i].Images[0].URLFull

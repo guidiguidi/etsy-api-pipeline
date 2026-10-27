@@ -19,7 +19,7 @@ type Config struct {
 	HTTPTimeoutSec    int    `yaml:"http_timeout_sec"`
 	LogLevel          string `yaml:"log_level"`
 	Debug             bool   `yaml:"debug"`
-	EmailVerifyMode   string `yaml:"email_verify_mode"` // "smtp" или "api"
+	EmailVerifyMode   string `yaml:"email_verify_mode"` // "smtp" or "api"
 	EmailAPIKey       string `yaml:"email_api_key"`
 	Mode              string `yaml:"mode"`
 	Filters           Filters `yaml:"filters"`

@@ -60,14 +60,14 @@ func (v *Validator) validateViaSMTP(email string) (bool, error) {
 	}
 	domain := parts[1]
 
-	// 1. Получаем MX записи (как в твоем скрипте через dns.resolver)
+	// 1. Query domain MX DNS records
 	mxRecords, err := net.LookupMX(domain)
 	if err != nil || len(mxRecords) == 0 {
 		return false, fmt.Errorf("no MX records")
 	}
 	mxHost := mxRecords[0].Host
 
-	// 2. Подключаемся (как в твоем smtplib.SMTP)
+	// 2. Establish direct SMTP connection
 	addr := mxHost + ":25"
 	conn, err := net.DialTimeout("tcp", addr, v.Timeout)
 	if err != nil {
@@ -81,7 +81,7 @@ func (v *Validator) validateViaSMTP(email string) (bool, error) {
 	}
 	defer client.Quit()
 
-	// 3. Представляемся именем нашего хоста (как server.local_hostname)
+	// 3. Issue HELO/EHLO with local hostname
 	hostname, _ := os.Hostname()
 	if hostname == "" {
 		hostname = "localhost"
@@ -90,14 +90,14 @@ func (v *Validator) validateViaSMTP(email string) (bool, error) {
 		return false, err
 	}
 
-	// 4. Указываем MAIL FROM (как в твоем скрипте)
+	// 4. Issue MAIL FROM handshake
 	if err := client.Mail("test@example.com"); err != nil {
 		return false, err
 	}
 
-	// 5. Проверяем адрес через RCPT TO (код 250 = успех)
+	// 5. Validate mailbox existence via RCPT TO (status 250 = exists)
 	if err := client.Rcpt(email); err != nil {
-		// В Go метод Rcpt возвращает ошибку, если код не 250
+		// In Go smtp.Client, Rcpt returns error on non-250 response
 		return false, nil
 	}
 

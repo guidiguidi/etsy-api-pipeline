@@ -57,7 +57,7 @@ func (w *Worker) RunOnce() error {
 		if match != nil {
 			matches = append(matches, match)
 		}
-		// Пауза, чтобы Google не забанил IP за слишком частые SMTP подключения
+		// Throttling delay to prevent rate-limiting on frequent SMTP handshakes
 		time.Sleep(2 * time.Second)
 	}
 
@@ -68,7 +68,7 @@ func (w *Worker) RunOnce() error {
 
 	log.Printf("🎯 Found %d VALID matches. Starting Telegram queue...", len(matches))
 
-	// Теперь по очереди отправляем всё, что накопилось
+	// Process queued candidate records sequentially
 	for i, m := range matches {
 		log.Printf("📤 Telegram Queue [%d/%d]: Processing %s", i+1, len(matches), m.Shop.ShopName)
 		if err := w.tgSender.SendMatch(context.Background(), m); err != nil {
@@ -80,7 +80,7 @@ func (w *Worker) RunOnce() error {
 	return nil
 }
 
-// processAndFilter проверяет товар, валидирует почту и возвращает Match, если всё ок
+// processAndFilter evaluates listing criteria, validates email, and returns Match on success
 func (w *Worker) processAndFilter(l model.Listing) *model.Match {
 	if w.cfg.Debug {
 		log.Printf("🔍 [DEBUG] Processing listing %d from shop %d", l.ListingID, l.ShopID)
@@ -140,7 +140,7 @@ func (w *Worker) processAndFilter(l model.Listing) *model.Match {
 		MatchedAt: time.Now(),
 	}
 
-	// Сохраняем в базу и файлы экспорта
+	// Persist match record to SQLite and export output files
 	_ = w.storage.SaveMatch(l.ListingID, shop.ShopID)
 	_ = export.SaveToJSONL(w.cfg.OutputDir, match)
 	_ = export.SaveToCSV(w.cfg.OutputDir, match)

@@ -78,7 +78,7 @@ func (s *SQLite) Init() error {
 		}
 	}
 
-	// Миграция: добавляем колонки, если таблица уже существовала без них
+	// Schema migration: add columns if table already exists without them
 	s.db.Exec("ALTER TABLE shops_raw ADD COLUMN login TEXT")
 	s.db.Exec("ALTER TABLE shops_raw ADD COLUMN email TEXT")
 	s.db.Exec("ALTER TABLE shops_raw ADD COLUMN email_valid INTEGER")
