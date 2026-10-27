@@ -40,16 +40,11 @@ build/
 *.exe
 *.dll
 *.dylib
-main
-*-alerter
-*-monitor
-*-bot
-*-sender
-*-auth
-xianyu_bot
-depop-alerter
-olx-bot
-etsy-monitor
+/main
+/etsy-monitor
+/etsy-auth
+/etsy-sender
+bin/
 
 # OS files & Archives
 .DS_Store
